@@ -1,0 +1,9 @@
+# Build artifacts
+*.zip
+
+# Claude Code
+.claude/
+
+# Windows artifacts
+nul
+Thumbs.db
