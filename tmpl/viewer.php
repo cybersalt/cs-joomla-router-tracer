@@ -4,7 +4,7 @@
  * @package     CyberSalt.Plugin
  * @subpackage  System.RouterTracer
  *
- * @copyright   Copyright (C) 2026 CyberSalt. All rights reserved.
+ * @copyright   Copyright (C) 2026 Cybersalt. All rights reserved.
  * @license     GNU General Public License version 3 or later; see LICENSE file for details.
  *
  * This file is part of cs-joomla-router-tracer.
