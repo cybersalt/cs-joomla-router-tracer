@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_ROUTERTRACER</name>
+    <author>CyberSalt</author>
+    <creationDate>January 2026</creationDate>
+    <copyright>Copyright (C) 2026 CyberSalt. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <authorEmail>support@cybersalt.org</authorEmail>
+    <authorUrl>https://cybersalt.org</authorUrl>
+    <version>1.1.0</version>
+    <description>PLG_SYSTEM_ROUTERTRACER_DESC</description>
+    <namespace path="src">CyberSalt\Plugin\System\RouterTracer</namespace>
+
+    <files>
+        <folder plugin="routertracer">services</folder>
+        <folder>src</folder>
+        <folder>tmpl</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_system_routertracer.ini</language>
+        <language tag="en-GB">en-GB/plg_system_routertracer.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic" addfieldprefix="CyberSalt\Plugin\System\RouterTracer\Field">
+                <field
+                    name="viewer_buttons"
+                    type="viewerbutton"
+                    label="PLG_SYSTEM_ROUTERTRACER_LOG_VIEWER_LABEL"
+                    description=""
+                />
+                <field
+                    name="spacer1"
+                    type="spacer"
+                    hr="true"
+                />
+                <field
+                    name="log_file"
+                    type="text"
+                    label="PLG_SYSTEM_ROUTERTRACER_LOG_FILE_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_LOG_FILE_DESC"
+                    default="router_trace.log"
+                />
+                <field
+                    name="log_stack_traces"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_LOG_STACK_TRACES_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_LOG_STACK_TRACES_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="log_headers"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_LOG_HEADERS_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_LOG_HEADERS_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="log_redirects"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_LOG_REDIRECTS_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_LOG_REDIRECTS_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="max_log_size"
+                    type="number"
+                    label="PLG_SYSTEM_ROUTERTRACER_MAX_LOG_SIZE_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_MAX_LOG_SIZE_DESC"
+                    default="5"
+                    min="1"
+                    max="50"
+                />
+                <field
+                    name="filter_frontend"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_FILTER_FRONTEND_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_FILTER_FRONTEND_DESC"
+                    default="1"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="filter_backend"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_FILTER_BACKEND_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_FILTER_BACKEND_DESC"
+                    default="0"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="url_filter"
+                    type="textarea"
+                    label="PLG_SYSTEM_ROUTERTRACER_URL_FILTER_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_URL_FILTER_DESC"
+                    default=""
+                    rows="3"
+                />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

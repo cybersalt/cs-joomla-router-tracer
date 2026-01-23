@@ -1,0 +1,51 @@
+<div class="changelog-container">
+    <h1>Changelog - Router Tracer Plugin</h1>
+    <p>All notable changes to the Router Tracer plugin will be documented in this file.</p>
+
+    <div class="version">
+        <h2>🚀 Version 1.1.0 <span class="version-badge">January 2026</span></h2>
+
+        <h3>📦 New Features</h3>
+        <ul>
+            <li><strong>Apache .htaccess Rewrite Detection</strong>: Detects when Apache mod_rewrite modifies URLs before PHP processes them, helping identify <code>.htaccess</code> rules causing redirect loops</li>
+            <li><strong>SEF Plugin Configuration Display</strong>: Shows current SEF settings and enabled redirect-related plugins in log entries</li>
+            <li><strong>System Plugin Ordering Display</strong>: Lists all enabled system plugins in execution order, highlighting SEF/redirect plugins</li>
+            <li><strong>Call Chain Tracking</strong>: Identifies which plugin, module, or component triggered each event</li>
+        </ul>
+
+        <h3>🔧 Improvements</h3>
+        <ul>
+            <li><strong>Enhanced Log Viewer</strong>: Dark-themed viewer with expandable entries, JSON syntax highlighting, and caller badges</li>
+            <li><strong>Dump Log Feature</strong>: Copy formatted log to clipboard for easy sharing</li>
+            <li><strong>Better Loop Detection</strong>: Improved pattern matching for trailing slash toggle loops</li>
+            <li><strong>Request ID Tracking</strong>: Each request gets a unique ID for correlating related log entries</li>
+        </ul>
+    </div>
+
+    <div class="version">
+        <h2>🚀 Version 1.0.0 <span class="version-badge">January 2026</span></h2>
+
+        <h3>📦 New Features</h3>
+        <ul>
+            <li><strong>Initial Release</strong>: Complete router and URL event logging for Joomla 5</li>
+            <li><strong>Event Logging</strong>: Captures <code>onAfterInitialise</code>, <code>onAfterRoute</code>, <code>onAfterDispatch</code>, <code>onBeforeRender</code>, <code>onBeforeCompileHead</code>, <code>onAfterRender</code>, <code>onBeforeRespond</code>, <code>onAfterRespond</code>, and <code>onError</code></li>
+            <li><strong>Stack Traces</strong>: Optional PHP stack traces to identify what code triggers each event</li>
+            <li><strong>HTTP Headers Logging</strong>: Captures request headers for debugging</li>
+            <li><strong>Redirect Detection</strong>: Scans for redirect headers and meta refresh tags</li>
+            <li><strong>Log Rotation</strong>: Automatic archiving when log reaches configured size limit</li>
+            <li><strong>URL Filtering</strong>: Filter logging to specific URL patterns</li>
+            <li><strong>Frontend/Backend Filtering</strong>: Selectively log site or administrator requests</li>
+            <li><strong>Built-in Log Viewer</strong>: Dark-themed viewer with filtering by request ID and event type</li>
+            <li><strong>Admin Buttons</strong>: View, Download, and Clear log directly from plugin settings</li>
+            <li><strong>AJAX Integration</strong>: Uses <code>com_ajax</code> with proper <code>SubscriberInterface</code> pattern</li>
+        </ul>
+
+        <h3>🔧 Technical Details</h3>
+        <ul>
+            <li>Joomla 5 native architecture using <code>services/provider.php</code> and <code>SubscriberInterface</code></li>
+            <li>Custom form field for admin settings buttons</li>
+            <li>JSON-formatted log entries for easy parsing</li>
+            <li>Session-based request tracking</li>
+        </ul>
+    </div>
+</div>
