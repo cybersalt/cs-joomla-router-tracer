@@ -1,7 +1,7 @@
 
 <?php
 /**
- * @package     CyberSalt.Plugin
+ * @package     Cybersalt.Plugin
  * @subpackage  System.RouterTracer
  *
  * @copyright   Copyright (C) 2026 Cybersalt. All rights reserved.

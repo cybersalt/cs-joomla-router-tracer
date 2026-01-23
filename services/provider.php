@@ -1,7 +1,7 @@
 
 <?php
 /**
- * @package     CyberSalt.Plugin
+ * @package     Cybersalt.Plugin
  * @subpackage  System.RouterTracer
  *
  * @copyright   Copyright (C) 2026 Cybersalt. All rights reserved.
@@ -31,7 +31,7 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use CyberSalt\Plugin\System\RouterTracer\Extension\RouterTracer;
+use Cybersalt\Plugin\System\RouterTracer\Extension\RouterTracer;
 
 return new class () implements ServiceProviderInterface {
     /**

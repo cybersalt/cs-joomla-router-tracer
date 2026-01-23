@@ -1,7 +1,7 @@
 
 <?php
 /**
- * @package     CyberSalt.Plugin
+ * @package     Cybersalt.Plugin
  * @subpackage  System.RouterTracer
  *
  * @copyright   Copyright (C) 2026 Cybersalt. All rights reserved.
@@ -23,7 +23,7 @@
  * along with cs-joomla-router-tracer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace CyberSalt\Plugin\System\RouterTracer\Field;
+namespace Cybersalt\Plugin\System\RouterTracer\Field;
 
 \defined('_JEXEC') or die;
 
