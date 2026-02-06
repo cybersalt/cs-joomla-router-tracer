@@ -1364,20 +1364,20 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
 
         // Only allow in administrator
         if (!$app || !$app->isClient('administrator')) {
-            $this->setAjaxResult($event, json_encode(['error' => 'Access denied']));
+            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_ACCESS_DENIED')]));
             return;
         }
 
         // Check user permissions
         $user = Factory::getApplication()->getIdentity();
         if (!$user->authorise('core.manage', 'com_plugins')) {
-            $this->setAjaxResult($event, json_encode(['error' => 'Access denied - insufficient permissions']));
+            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INSUFFICIENT_PERMISSIONS')]));
             return;
         }
 
         // Validate token
         if (!Session::checkToken('get') && !Session::checkToken('post')) {
-            $this->setAjaxResult($event, json_encode(['error' => 'Invalid security token']));
+            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INVALID_TOKEN')]));
             return;
         }
 
@@ -1409,7 +1409,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
                 break;
 
             default:
-                $result = json_encode(['error' => 'Unknown action']);
+                $result = json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_UNKNOWN_ACTION')]);
         }
 
         $this->setAjaxResult($event, $result);
@@ -1554,7 +1554,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
                 'success' => true,
                 'entries' => [],
                 'total'   => 0,
-                'message' => 'Log file does not exist yet',
+                'message' => Text::_('PLG_SYSTEM_ROUTERTRACER_LOG_NOT_EXISTS'),
             ]);
         }
 
@@ -1614,7 +1614,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
 
         return json_encode([
             'success' => true,
-            'message' => 'Log file cleared successfully',
+            'message' => Text::_('PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED'),
         ]);
     }
 
@@ -1716,8 +1716,10 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
      */
     private function ajaxRenderViewer(): string
     {
+        $this->loadLanguage();
         $token = Session::getFormToken();
         $ajaxUrl = Uri::base() . 'index.php?option=com_ajax&plugin=routertracer&group=system&format=raw&' . $token . '=1';
+        $lang = Factory::getLanguage()->getTag();
 
         ob_start();
         include __DIR__ . '/../../tmpl/viewer.php';

@@ -2,10 +2,15 @@
 
 All notable changes to the Router Tracer plugin will be documented in this file.
 
-## 🚀 Version 1.1.1 (February 2026)
+## 🚀 Version 1.2.0 (February 2026)
+
+### 📦 New Features
+- **Full Multi-lingual Support**: All UI strings now use Joomla language constants via `Text::_()`, making the plugin fully translatable
+- **JavaScript i18n**: Log viewer JS strings served through a `RT_LANG` object populated from language files
+- **Dynamic HTML lang**: Viewer page `<html lang>` attribute now reflects the active Joomla language
 
 ### 🐛 Bug Fixes
-- **Namespace Declaration Error**: Removed blank line before `<?php` opening tag in `RouterTracer.php` that caused "Namespace declaration statement has to be the very first statement" fatal error
+- **Namespace Declaration Error**: Removed blank line before `<?php` opening tag in all PHP files (`RouterTracer.php`, `ViewerbuttonField.php`, `viewer.php`, `provider.php`) that caused fatal errors
 
 ## 🚀 Version 1.1.0 (January 2026)
 

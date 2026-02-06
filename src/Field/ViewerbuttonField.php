@@ -1,4 +1,3 @@
-
 <?php
 /**
  * @package     Cybersalt.Plugin
@@ -92,10 +91,10 @@ class ViewerbuttonField extends FormField
                     if (data.success) {
                         alert("' . Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_SUCCESS', true) . '");
                     } else {
-                        alert("Error: " + (data.error || "Unknown error"));
+                        alert("' . Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_PREFIX', true) . '" + (data.error || "' . Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_UNKNOWN', true) . '"));
                     }
                 })
-                .catch(err => alert("Failed to clear log: " + err.message));
+                .catch(err => alert("' . Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_FETCH_FAILED', true) . '" + err.message));
         }
         </script>';
 

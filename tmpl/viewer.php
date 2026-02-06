@@ -1,4 +1,3 @@
-
 <?php
 /**
  * @package     Cybersalt.Plugin
@@ -25,18 +24,74 @@
 
 \defined('_JEXEC') or die;
 
+use Joomla\CMS\Language\Text;
+
 /**
  * Variables available:
  * @var string $token     CSRF token
  * @var string $ajaxUrl   Base AJAX URL
+ * @var string $lang      Language tag (e.g. en-GB)
  */
+
+// Build JS language object for use in JavaScript
+$jsLang = json_encode([
+    'loading'              => Text::_('PLG_SYSTEM_ROUTERTRACER_LOADING'),
+    'errorLabel'           => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_LABEL'),
+    'errorUnknown'         => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_UNKNOWN'),
+    'failedLoadLog'        => Text::_('PLG_SYSTEM_ROUTERTRACER_FAILED_LOAD_LOG'),
+    'noLogEntries'         => Text::_('PLG_SYSTEM_ROUTERTRACER_NO_LOG_ENTRIES'),
+    'noEntriesMatch'       => Text::_('PLG_SYSTEM_ROUTERTRACER_NO_ENTRIES_MATCH'),
+    'loopDetected'         => Text::_('PLG_SYSTEM_ROUTERTRACER_LOOP_DETECTED'),
+    'htaccessRewrite'      => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_HTACCESS_REWRITE'),
+    'warning'              => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_WARNING'),
+    'urlChanged'           => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_URL_CHANGED'),
+    'apacheHtaccess'       => Text::_('PLG_SYSTEM_ROUTERTRACER_APACHE_HTACCESS'),
+    'rewriteDetected'      => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_REWRITE_DETECTED'),
+    'noRewrite'            => Text::_('PLG_SYSTEM_ROUTERTRACER_NO_REWRITE'),
+    'otherRedirectVars'    => Text::_('PLG_SYSTEM_ROUTERTRACER_OTHER_REDIRECT_VARS'),
+    'systemPluginsHeading' => Text::_('PLG_SYSTEM_ROUTERTRACER_SYSTEM_PLUGINS_HEADING'),
+    'sefConfiguration'     => Text::_('PLG_SYSTEM_ROUTERTRACER_SEF_CONFIGURATION'),
+    'sefUrls'              => Text::_('PLG_SYSTEM_ROUTERTRACER_SEF_URLS'),
+    'urlRewriting'         => Text::_('PLG_SYSTEM_ROUTERTRACER_URL_REWRITING'),
+    'urlSuffix'            => Text::_('PLG_SYSTEM_ROUTERTRACER_URL_SUFFIX'),
+    'enabled'              => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_ENABLED'),
+    'disabled'             => Text::_('PLG_SYSTEM_ROUTERTRACER_BADGE_DISABLED'),
+    'yes'                  => Text::_('JYES'),
+    'no'                   => Text::_('JNO'),
+    'callChainHeading'     => Text::_('PLG_SYSTEM_ROUTERTRACER_CALL_CHAIN_HEADING'),
+    'urlChangedDuring'     => Text::_('PLG_SYSTEM_ROUTERTRACER_URL_CHANGED_DURING'),
+    'labelFrom'            => Text::_('PLG_SYSTEM_ROUTERTRACER_LABEL_FROM'),
+    'labelTo'              => Text::_('PLG_SYSTEM_ROUTERTRACER_LABEL_TO'),
+    'trailingSlashAdded'   => Text::_('PLG_SYSTEM_ROUTERTRACER_TRAILING_SLASH_ADDED'),
+    'trailingSlashRemoved' => Text::_('PLG_SYSTEM_ROUTERTRACER_TRAILING_SLASH_REMOVED'),
+    'stackTrace'           => Text::_('PLG_SYSTEM_ROUTERTRACER_STACK_TRACE'),
+    'showingEntries'       => Text::_('PLG_SYSTEM_ROUTERTRACER_SHOWING_ENTRIES'),
+    'btnPrevious'          => Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_PREVIOUS'),
+    'btnNext'              => Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_NEXT'),
+    'dumpLoading'          => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_LOADING'),
+    'copied'               => Text::_('PLG_SYSTEM_ROUTERTRACER_COPIED'),
+    'dumpHeader'           => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_HEADER'),
+    'dumpGenerated'        => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_GENERATED'),
+    'dumpTotal'            => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_TOTAL'),
+    'dumpRequestId'        => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_REQUEST_ID'),
+    'dumpElapsed'          => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_ELAPSED'),
+    'dumpUrl'              => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_URL'),
+    'dumpUrlChanged'       => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_URL_CHANGED'),
+    'dumpLoopDetected'     => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_LOOP_DETECTED'),
+    'dumpPattern'          => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_PATTERN'),
+    'dumpData'             => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_DATA'),
+    'dumpStackTrace'       => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_STACK_TRACE'),
+    'dumpNoEntries'        => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_NO_ENTRIES'),
+    'dumpFailed'           => Text::_('PLG_SYSTEM_ROUTERTRACER_DUMP_FAILED'),
+    'clearFailed'          => Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_FAILED'),
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo htmlspecialchars($lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Router Tracer - Log Viewer</title>
+    <title><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_VIEWER_TITLE'); ?></title>
     <style>
         :root {
             --primary: #1a73e8;
@@ -644,7 +699,7 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                Router Tracer Log Viewer
+                <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_VIEWER_HEADING'); ?>
             </h1>
             <div class="btn-group">
                 <button class="btn btn-secondary" onclick="refreshLog()">
@@ -652,14 +707,14 @@
                         <polyline points="23 4 23 10 17 10"></polyline>
                         <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                     </svg>
-                    Refresh
+                    <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_REFRESH'); ?>
                 </button>
-                <button class="btn btn-primary" onclick="dumpLog()" title="Copy raw log to clipboard">
+                <button class="btn btn-primary" onclick="dumpLog()" title="<?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_DUMP_LOG_TITLE'); ?>">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
-                    Dump Log
+                    <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_DUMP_LOG'); ?>
                 </button>
                 <button class="btn btn-success" onclick="downloadLog()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -667,14 +722,14 @@
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                     </svg>
-                    Download
+                    <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_DOWNLOAD'); ?>
                 </button>
                 <button class="btn btn-danger" onclick="showClearModal()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
-                    Clear Log
+                    <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_LOG'); ?>
                 </button>
             </div>
         </div>
@@ -682,39 +737,39 @@
         <div class="stats-bar" id="statsBar">
             <div class="stat">
                 <span class="stat-value" id="statEntries">-</span>
-                <span class="stat-label">Log Entries</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_LOG_ENTRIES'); ?></span>
             </div>
             <div class="stat">
                 <span class="stat-value" id="statRequests">-</span>
-                <span class="stat-label">Requests</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_REQUESTS'); ?></span>
             </div>
             <div class="stat">
                 <span class="stat-value" id="statSize">-</span>
-                <span class="stat-label">File Size</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_FILE_SIZE'); ?></span>
             </div>
             <div class="stat">
                 <span class="stat-value stat-warning" id="statWarnings">-</span>
-                <span class="stat-label">Warnings</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_WARNINGS'); ?></span>
             </div>
             <div class="stat">
                 <span class="stat-value stat-danger" id="statLoops">-</span>
-                <span class="stat-label">Potential Loops</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_POTENTIAL_LOOPS'); ?></span>
             </div>
             <div class="stat">
                 <span class="stat-value stat-danger" id="statErrors">-</span>
-                <span class="stat-label">Errors</span>
+                <span class="stat-label"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_STAT_ERRORS'); ?></span>
             </div>
         </div>
 
         <div class="filters">
             <div class="filter-group">
-                <label>Filter by Request ID:</label>
-                <input type="text" id="filterRequestId" placeholder="e.g. a1b2c3d4" style="width: 150px;">
+                <label><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_REQUEST_ID'); ?></label>
+                <input type="text" id="filterRequestId" placeholder="<?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_REQUEST_ID_PLACEHOLDER'); ?>" style="width: 150px;">
             </div>
             <div class="filter-group">
-                <label>Event:</label>
+                <label><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_EVENT'); ?></label>
                 <select id="filterEvent" style="min-width: 180px;">
-                    <option value="">All Events</option>
+                    <option value=""><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_ALL_EVENTS'); ?></option>
                     <option value="onAfterInitialise">onAfterInitialise</option>
                     <option value="onAfterRoute">onAfterRoute</option>
                     <option value="onParseRoute">onParseRoute</option>
@@ -729,41 +784,42 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label>Show:</label>
+                <label><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_SHOW'); ?></label>
                 <select id="filterLimit">
-                    <option value="50">50 entries</option>
-                    <option value="100" selected>100 entries</option>
-                    <option value="250">250 entries</option>
-                    <option value="500">500 entries</option>
+                    <option value="50"><?php echo sprintf(Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_N_ENTRIES'), 50); ?></option>
+                    <option value="100" selected><?php echo sprintf(Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_N_ENTRIES'), 100); ?></option>
+                    <option value="250"><?php echo sprintf(Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_N_ENTRIES'), 250); ?></option>
+                    <option value="500"><?php echo sprintf(Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_N_ENTRIES'), 500); ?></option>
                 </select>
             </div>
             <div class="filter-group">
                 <label>
-                    <input type="checkbox" id="filterWarningsOnly"> Warnings/Loops only
+                    <input type="checkbox" id="filterWarningsOnly"> <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_FILTER_WARNINGS_ONLY'); ?>
                 </label>
             </div>
-            <button class="btn btn-secondary" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn btn-secondary" onclick="applyFilters()"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_APPLY_FILTERS'); ?></button>
         </div>
 
         <div class="log-container" id="logContainer">
-            <div class="loading">Loading log entries...</div>
+            <div class="loading"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_LOADING'); ?></div>
         </div>
     </div>
 
     <!-- Clear Confirmation Modal -->
     <div class="modal-overlay" id="clearModal">
         <div class="modal">
-            <h3>Clear Log File?</h3>
-            <p>This will archive the current log file and create a new empty one. This action cannot be undone.</p>
+            <h3><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_MODAL_TITLE'); ?></h3>
+            <p><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_MODAL_TEXT'); ?></p>
             <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="hideClearModal()">Cancel</button>
-                <button class="btn btn-danger" onclick="clearLog()">Clear Log</button>
+                <button class="btn btn-secondary" onclick="hideClearModal()"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_CANCEL'); ?></button>
+                <button class="btn btn-danger" onclick="clearLog()"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_LOG'); ?></button>
             </div>
         </div>
     </div>
 
     <script>
         const ajaxUrl = '<?php echo $ajaxUrl; ?>';
+        const RT_LANG = <?php echo $jsLang; ?>;
         let currentOffset = 0;
         let totalEntries = 0;
 
@@ -797,7 +853,7 @@
 
         function loadLog() {
             const container = document.getElementById('logContainer');
-            container.innerHTML = '<div class="loading">Loading log entries...</div>';
+            container.innerHTML = '<div class="loading">' + escapeHtml(RT_LANG.loading) + '</div>';
 
             const requestId = document.getElementById('filterRequestId').value;
             const limit = document.getElementById('filterLimit').value;
@@ -812,11 +868,11 @@
                         totalEntries = data.total;
                         renderEntries(data.entries);
                     } else {
-                        container.innerHTML = '<div class="empty-state"><h3>Error</h3><p>' + (data.error || 'Unknown error') + '</p></div>';
+                        container.innerHTML = '<div class="empty-state"><h3>' + escapeHtml(RT_LANG.errorLabel) + '</h3><p>' + escapeHtml(data.error || RT_LANG.errorUnknown) + '</p></div>';
                     }
                 })
                 .catch(err => {
-                    container.innerHTML = '<div class="empty-state"><h3>Error</h3><p>Failed to load log: ' + err.message + '</p></div>';
+                    container.innerHTML = '<div class="empty-state"><h3>' + escapeHtml(RT_LANG.errorLabel) + '</h3><p>' + escapeHtml(RT_LANG.failedLoadLog) + escapeHtml(err.message) + '</p></div>';
                 });
         }
 
@@ -840,7 +896,7 @@
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state"><h3>No Log Entries</h3><p>No entries match your filters, or the log file is empty.</p></div>';
+                container.innerHTML = '<div class="empty-state"><h3>' + escapeHtml(RT_LANG.noLogEntries) + '</h3><p>' + escapeHtml(RT_LANG.noEntriesMatch) + '</p></div>';
                 return;
             }
 
@@ -869,10 +925,10 @@
                 html += '<span class="log-timestamp">' + entry.timestamp + '</span>';
                 html += '<span class="log-request-id">' + entry.request_id + '</span>';
                 html += '<span class="' + eventClass + '">' + entry.event + '</span>';
-                if (hasLoop) html += '<span class="loop-badge">LOOP DETECTED</span>';
-                if (hasApacheRewrite) html += '<span class="loop-badge" style="background: #ef4444;">.HTACCESS REWRITE</span>';
-                if (hasWarning && !hasLoop) html += '<span class="warning-badge">WARNING</span>';
-                if (hasUrlChange) html += '<span class="warning-badge">URL CHANGED</span>';
+                if (hasLoop) html += '<span class="loop-badge">' + escapeHtml(RT_LANG.loopDetected) + '</span>';
+                if (hasApacheRewrite) html += '<span class="loop-badge" style="background: #ef4444;">' + escapeHtml(RT_LANG.htaccessRewrite) + '</span>';
+                if (hasWarning && !hasLoop) html += '<span class="warning-badge">' + escapeHtml(RT_LANG.warning) + '</span>';
+                if (hasUrlChange) html += '<span class="warning-badge">' + escapeHtml(RT_LANG.urlChanged) + '</span>';
 
                 // Display caller information
                 if (entry.caller && entry.caller.primary) {
@@ -906,9 +962,9 @@
                     const rewrite = entry.data.url.apache_rewrite;
                     const hasRewrite = rewrite.rewrite_detected || rewrite.redirect_url || rewrite.redirect_status;
                     html += '<div class="apache-rewrite-info' + (rewrite.rewrite_detected ? ' detected' : '') + '">';
-                    html += '<h4>Apache .htaccess / mod_rewrite';
+                    html += '<h4>' + escapeHtml(RT_LANG.apacheHtaccess);
                     if (rewrite.rewrite_detected) {
-                        html += '<span class="rewrite-detected-badge">REWRITE DETECTED</span>';
+                        html += '<span class="rewrite-detected-badge">' + escapeHtml(RT_LANG.rewriteDetected) + '</span>';
                     }
                     html += '</h4>';
 
@@ -939,14 +995,14 @@
                         html += '<div class="rewrite-detail"><strong>PATH_INFO:</strong> ' + escapeHtml(rewrite.path_info) + '</div>';
                     }
                     if (rewrite.other_redirect_vars && Object.keys(rewrite.other_redirect_vars).length > 0) {
-                        html += '<div class="rewrite-detail"><strong>Other REDIRECT_* vars:</strong></div>';
+                        html += '<div class="rewrite-detail"><strong>' + escapeHtml(RT_LANG.otherRedirectVars) + '</strong></div>';
                         Object.keys(rewrite.other_redirect_vars).forEach(key => {
                             html += '<div class="rewrite-detail" style="margin-left: 15px;"><code>' + key + '</code>: ' + escapeHtml(String(rewrite.other_redirect_vars[key]).substring(0, 100)) + '</div>';
                         });
                     }
 
                     if (!hasRewrite) {
-                        html += '<div class="rewrite-detail" style="color: #86efac;">No .htaccess rewrite detected for this request</div>';
+                        html += '<div class="rewrite-detail" style="color: #86efac;">' + escapeHtml(RT_LANG.noRewrite) + '</div>';
                     }
 
                     html += '</div>';
@@ -955,7 +1011,7 @@
                 // System plugins list (shows enabled plugins that could cause redirects)
                 if (entry.data?.system_plugins && entry.data.system_plugins.length > 0) {
                     html += '<div class="system-plugins-info">';
-                    html += '<h4>Enabled System Plugins (in execution order)</h4>';
+                    html += '<h4>' + escapeHtml(RT_LANG.systemPluginsHeading) + '</h4>';
                     html += '<div class="plugin-list">';
                     entry.data.system_plugins.forEach(plugin => {
                         const isRedirectRelated = ['redirect', 'sef', 'languagefilter', 'languagecode', 'joomsef', 'sh404sef', 'acesef'].some(
@@ -975,11 +1031,11 @@
                 if (entry.data?.sef_config) {
                     const cfg = entry.data.sef_config;
                     html += '<div class="sef-config-info">';
-                    html += '<h4>SEF Configuration</h4>';
+                    html += '<h4>' + escapeHtml(RT_LANG.sefConfiguration) + '</h4>';
                     html += '<div class="config-grid">';
-                    html += '<span class="config-item"><strong>SEF URLs:</strong> ' + (cfg.sef ? 'Yes' : 'No') + '</span>';
-                    html += '<span class="config-item"><strong>URL Rewriting:</strong> ' + (cfg.sef_rewrite ? 'Yes' : 'No') + '</span>';
-                    html += '<span class="config-item"><strong>URL Suffix:</strong> ' + (cfg.sef_suffix ? 'Yes' : 'No') + '</span>';
+                    html += '<span class="config-item"><strong>' + escapeHtml(RT_LANG.sefUrls) + '</strong> ' + (cfg.sef ? RT_LANG.yes : RT_LANG.no) + '</span>';
+                    html += '<span class="config-item"><strong>' + escapeHtml(RT_LANG.urlRewriting) + '</strong> ' + (cfg.sef_rewrite ? RT_LANG.yes : RT_LANG.no) + '</span>';
+                    html += '<span class="config-item"><strong>' + escapeHtml(RT_LANG.urlSuffix) + '</strong> ' + (cfg.sef_suffix ? RT_LANG.yes : RT_LANG.no) + '</span>';
                     html += '</div>';
 
                     if (cfg.redirect_plugins) {
@@ -987,7 +1043,7 @@
                         Object.keys(cfg.redirect_plugins).forEach(name => {
                             const p = cfg.redirect_plugins[name];
                             html += '<div class="redirect-plugin-item">';
-                            html += '<strong>' + name + ':</strong> ' + (p.enabled ? '<span style="color: var(--warning)">ENABLED</span>' : 'disabled');
+                            html += '<strong>' + name + ':</strong> ' + (p.enabled ? '<span style="color: var(--warning)">' + escapeHtml(RT_LANG.enabled) + '</span>' : escapeHtml(RT_LANG.disabled));
                             if (p.params && Object.keys(p.params).length > 0) {
                                 html += ' <code>' + JSON.stringify(p.params).substring(0, 100) + '</code>';
                             }
@@ -1001,7 +1057,7 @@
                 // Caller chain info (shows what triggered this event)
                 if (entry.caller && entry.caller.chain && entry.caller.chain.length > 1) {
                     html += '<div class="caller-chain">';
-                    html += '<h4>Call Chain (what triggered this event)</h4>';
+                    html += '<h4>' + escapeHtml(RT_LANG.callChainHeading) + '</h4>';
                     entry.caller.chain.forEach((caller, i) => {
                         let name = '';
                         if (caller.type === 'plugin') {
@@ -1024,14 +1080,14 @@
                 // URL Change info
                 if (hasUrlChange) {
                     html += '<div class="url-change">';
-                    html += '<h4>URL Changed During This Event</h4>';
-                    html += '<div class="url-change-detail"><strong>From:</strong> ' + escapeHtml(entry.data.url_change.previous_url) + '</div>';
-                    html += '<div class="url-change-detail"><strong>To:</strong> ' + escapeHtml(entry.data.url_change.current_url) + '</div>';
+                    html += '<h4>' + escapeHtml(RT_LANG.urlChangedDuring) + '</h4>';
+                    html += '<div class="url-change-detail"><strong>' + escapeHtml(RT_LANG.labelFrom) + '</strong> ' + escapeHtml(entry.data.url_change.previous_url) + '</div>';
+                    html += '<div class="url-change-detail"><strong>' + escapeHtml(RT_LANG.labelTo) + '</strong> ' + escapeHtml(entry.data.url_change.current_url) + '</div>';
                     if (entry.data.url_change.trailing_slash_added) {
-                        html += '<div class="url-change-detail" style="color: var(--warning);">Trailing slash was ADDED</div>';
+                        html += '<div class="url-change-detail" style="color: var(--warning);">' + escapeHtml(RT_LANG.trailingSlashAdded) + '</div>';
                     }
                     if (entry.data.url_change.trailing_slash_removed) {
-                        html += '<div class="url-change-detail" style="color: var(--warning);">Trailing slash was REMOVED</div>';
+                        html += '<div class="url-change-detail" style="color: var(--warning);">' + escapeHtml(RT_LANG.trailingSlashRemoved) + '</div>';
                     }
                     html += '</div>';
                 }
@@ -1039,7 +1095,7 @@
                 // Stack trace
                 if (entry.stack_trace && entry.stack_trace.length > 0) {
                     html += '<div class="stack-trace">';
-                    html += '<h4>Stack Trace</h4>';
+                    html += '<h4>' + escapeHtml(RT_LANG.stackTrace) + '</h4>';
                     entry.stack_trace.forEach(frame => {
                         html += '<div class="stack-frame">';
                         if (frame.file) html += '<span class="file">' + escapeHtml(frame.file) + '</span>';
@@ -1059,14 +1115,14 @@
 
             // Pagination
             html += '<div class="pagination">';
-            html += '<span class="pagination-info">Showing ' + filtered.length + ' of ' + totalEntries + ' entries</span>';
+            html += '<span class="pagination-info">' + RT_LANG.showingEntries.replace('%s', filtered.length).replace('%s', totalEntries) + '</span>';
             html += '<div class="btn-group">';
             if (currentOffset > 0) {
-                html += '<button class="btn btn-secondary" onclick="prevPage()">Previous</button>';
+                html += '<button class="btn btn-secondary" onclick="prevPage()">' + escapeHtml(RT_LANG.btnPrevious) + '</button>';
             }
             const limit = parseInt(document.getElementById('filterLimit').value);
             if (currentOffset + limit < totalEntries) {
-                html += '<button class="btn btn-secondary" onclick="nextPage()">Next</button>';
+                html += '<button class="btn btn-secondary" onclick="nextPage()">' + escapeHtml(RT_LANG.btnNext) + '</button>';
             }
             html += '</div>';
             html += '</div>';
@@ -1142,12 +1198,12 @@
                     if (data.success) {
                         refreshLog();
                     } else {
-                        alert('Error: ' + (data.error || 'Unknown error'));
+                        alert(RT_LANG.errorLabel + ': ' + (data.error || RT_LANG.errorUnknown));
                     }
                 })
                 .catch(err => {
                     hideClearModal();
-                    alert('Failed to clear log: ' + err.message);
+                    alert(RT_LANG.clearFailed + err.message);
                 });
         }
 
@@ -1158,7 +1214,7 @@
         function dumpLog() {
             const btn = event.target.closest('button');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Loading...';
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> ' + escapeHtml(RT_LANG.dumpLoading);
             btn.disabled = true;
 
             // Fetch all log entries (up to 10000)
@@ -1167,35 +1223,35 @@
                 .then(data => {
                     if (data.success && data.entries) {
                         // Format as readable text
-                        let output = '=== Router Tracer Log Dump ===\n';
-                        output += 'Generated: ' + new Date().toISOString() + '\n';
-                        output += 'Total Entries: ' + data.total + '\n';
+                        let output = RT_LANG.dumpHeader + '\n';
+                        output += RT_LANG.dumpGenerated + ' ' + new Date().toISOString() + '\n';
+                        output += RT_LANG.dumpTotal + ' ' + data.total + '\n';
                         output += '================================\n\n';
 
                         data.entries.forEach(entry => {
                             output += '--- [' + entry.timestamp + '] ' + entry.event + ' ---\n';
-                            output += 'Request ID: ' + entry.request_id + '\n';
-                            output += 'Elapsed: ' + entry.elapsed_ms + 'ms\n';
+                            output += RT_LANG.dumpRequestId + ' ' + entry.request_id + '\n';
+                            output += RT_LANG.dumpElapsed + ' ' + entry.elapsed_ms + 'ms\n';
 
                             if (entry.data?.url?.full_url) {
-                                output += 'URL: ' + entry.data.url.full_url + '\n';
+                                output += RT_LANG.dumpUrl + ' ' + entry.data.url.full_url + '\n';
                             }
 
                             if (entry.data?.url_change) {
-                                output += '** URL CHANGED **\n';
-                                output += '  From: ' + entry.data.url_change.previous_url + '\n';
-                                output += '  To: ' + entry.data.url_change.current_url + '\n';
+                                output += RT_LANG.dumpUrlChanged + '\n';
+                                output += '  ' + RT_LANG.labelFrom + ' ' + entry.data.url_change.previous_url + '\n';
+                                output += '  ' + RT_LANG.labelTo + ' ' + entry.data.url_change.current_url + '\n';
                             }
 
                             if (entry.data?.loop_analysis?.potential_loop) {
-                                output += '** POTENTIAL LOOP DETECTED **\n';
-                                output += '  Pattern: ' + (entry.data.loop_analysis.pattern || 'unknown') + '\n';
+                                output += RT_LANG.dumpLoopDetected + '\n';
+                                output += '  ' + RT_LANG.dumpPattern + ' ' + (entry.data.loop_analysis.pattern || 'unknown') + '\n';
                             }
 
-                            output += 'Data: ' + JSON.stringify(entry.data, null, 2) + '\n';
+                            output += RT_LANG.dumpData + ' ' + JSON.stringify(entry.data, null, 2) + '\n';
 
                             if (entry.stack_trace && entry.stack_trace.length > 0) {
-                                output += 'Stack Trace:\n';
+                                output += RT_LANG.dumpStackTrace + '\n';
                                 entry.stack_trace.forEach(frame => {
                                     output += '  ' + (frame.file || '?') + ':' + (frame.line || '?');
                                     if (frame.class) output += ' ' + frame.class;
@@ -1209,7 +1265,7 @@
 
                         // Copy to clipboard
                         navigator.clipboard.writeText(output).then(() => {
-                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + escapeHtml(RT_LANG.copied);
                             setTimeout(() => {
                                 btn.innerHTML = originalText;
                                 btn.disabled = false;
@@ -1223,20 +1279,20 @@
                             document.execCommand('copy');
                             document.body.removeChild(textarea);
 
-                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+                            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ' + escapeHtml(RT_LANG.copied);
                             setTimeout(() => {
                                 btn.innerHTML = originalText;
                                 btn.disabled = false;
                             }, 2000);
                         });
                     } else {
-                        alert('No log entries to dump');
+                        alert(RT_LANG.dumpNoEntries);
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                     }
                 })
                 .catch(err => {
-                    alert('Failed to dump log: ' + err.message);
+                    alert(RT_LANG.dumpFailed + err.message);
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });
