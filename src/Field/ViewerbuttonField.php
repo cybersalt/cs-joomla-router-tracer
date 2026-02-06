@@ -86,7 +86,11 @@ class ViewerbuttonField extends FormField
         function clearRouterTracerLog(url, confirmMsg) {
             if (!confirm(confirmMsg)) return;
             fetch(url)
-                .then(r => r.json())
+                .then(r => r.text())
+                .then(text => {
+                    if (!text) throw new Error("Empty response from server");
+                    return JSON.parse(text);
+                })
                 .then(data => {
                     if (data.success) {
                         alert("' . Text::_('PLG_SYSTEM_ROUTERTRACER_CLEAR_SUCCESS', true) . '");

@@ -1364,20 +1364,23 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
 
         // Only allow in administrator
         if (!$app || !$app->isClient('administrator')) {
-            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_ACCESS_DENIED')]));
+            $this->sendJsonResponse(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_ACCESS_DENIED')]);
+
             return;
         }
 
         // Check user permissions
         $user = Factory::getApplication()->getIdentity();
         if (!$user->authorise('core.manage', 'com_plugins')) {
-            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INSUFFICIENT_PERMISSIONS')]));
+            $this->sendJsonResponse(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INSUFFICIENT_PERMISSIONS')]);
+
             return;
         }
 
         // Validate token
         if (!Session::checkToken('get') && !Session::checkToken('post')) {
-            $this->setAjaxResult($event, json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INVALID_TOKEN')]));
+            $this->sendJsonResponse(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_INVALID_TOKEN')]);
+
             return;
         }
 
@@ -1393,16 +1396,20 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
                 break;
 
             case 'download':
-                $result = $this->ajaxDownloadLog();
-                break;
+                $this->ajaxDownloadLog();
+
+                return;
 
             case 'stats':
                 $result = $this->ajaxGetStats();
                 break;
 
             case 'viewer':
-                $result = $this->ajaxRenderViewer();
-                break;
+                // Viewer returns HTML - output directly
+                echo $this->ajaxRenderViewer();
+                $app->close();
+
+                return;
 
             case 'test':
                 $result = $this->ajaxTestLogging();
@@ -1412,28 +1419,25 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
                 $result = json_encode(['error' => Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_UNKNOWN_ACTION')]);
         }
 
-        $this->setAjaxResult($event, $result);
+        // Output JSON response directly - bypasses com_ajax result collection
+        // which is unreliable with format=raw in some Joomla versions
+        header('Content-Type: application/json; charset=utf-8');
+        echo $result;
+        $app->close();
     }
 
     /**
-     * Set the AJAX result on the event object
+     * Send a JSON error response and close the application
      *
-     * @param   Event   $event   The event object
-     * @param   string  $result  The result to set
+     * @param   array  $data  The data to encode as JSON
      *
      * @return  void
      */
-    private function setAjaxResult(Event $event, string $result): void
+    private function sendJsonResponse(array $data): void
     {
-        // For Joomla's com_ajax, results are collected via the event
-        if (method_exists($event, 'addResult')) {
-            $event->addResult($result);
-        } else {
-            // Fallback for older Joomla versions - set result argument
-            $results = $event->getArgument('result', []);
-            $results[] = $result;
-            $event->setArgument('result', $results);
-        }
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data);
+        $this->getApp()->close();
     }
 
     /**
@@ -1623,20 +1627,24 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
      *
      * @return  string  Raw log content for download
      */
-    private function ajaxDownloadLog(): string
+    private function ajaxDownloadLog(): void
     {
+        $app     = $this->getApp();
         $logFile = $this->getLogFile();
 
         if (!file_exists($logFile)) {
-            return '';
+            echo '';
+            $app->close();
+
+            return;
         }
 
-        // Set headers for download
+        // Set headers for download and output file directly
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="router_trace_' . date('Y-m-d_His') . '.log"');
         header('Content-Length: ' . filesize($logFile));
-
-        return file_get_contents($logFile);
+        readfile($logFile);
+        $app->close();
     }
 
     /**

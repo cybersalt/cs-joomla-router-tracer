@@ -2,6 +2,13 @@
 
 All notable changes to the Router Tracer plugin will be documented in this file.
 
+## 🚀 Version 1.2.1 (February 2026)
+
+### 🐛 Bug Fixes
+- **Empty AJAX Response Fix**: Fixed "Unexpected end of JSON input" error when clearing log from plugin settings by switching from com_ajax event result collection to direct output, which is more reliable with `format=raw`
+- **Resilient JSON Parsing**: Clear log JavaScript now validates response body before parsing JSON, providing clearer error messages
+- **Download Handler**: Download action now uses `readfile()` and closes application directly for more reliable file downloads
+
 ## 🚀 Version 1.2.0 (February 2026)
 
 ### 📦 New Features
