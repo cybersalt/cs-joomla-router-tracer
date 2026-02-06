@@ -2,6 +2,11 @@
 
 All notable changes to the Router Tracer plugin will be documented in this file.
 
+## 🚀 Version 1.1.1 (February 2026)
+
+### 🐛 Bug Fixes
+- **Namespace Declaration Error**: Removed blank line before `<?php` opening tag in `RouterTracer.php` that caused "Namespace declaration statement has to be the very first statement" fatal error
+
 ## 🚀 Version 1.1.0 (January 2026)
 
 ### 📦 New Features
