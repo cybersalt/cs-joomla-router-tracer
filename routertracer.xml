@@ -44,7 +44,8 @@
                     type="text"
                     label="PLG_SYSTEM_ROUTERTRACER_LOG_FILE_LABEL"
                     description="PLG_SYSTEM_ROUTERTRACER_LOG_FILE_DESC"
-                    default="router_trace.log"
+                    default="router_trace"
+                    filter="cmd"
                 />
                 <field
                     name="log_stack_traces"

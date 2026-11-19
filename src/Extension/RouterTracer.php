@@ -225,11 +225,93 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
     private function getLogFile(): string
     {
         if (!isset($this->logFile)) {
-            $fileName = $this->getParam('log_file', 'router_trace.log');
-            $this->logFile = JPATH_ROOT . '/logs/' . $fileName;
+            $this->logFile = self::getLogDir() . '/' . self::safeLogName($this->getParam('log_file', 'router_trace')) . '.php';
         }
 
         return $this->logFile;
+    }
+
+    /**
+     * First line of every log file. The log is a .php file, so a direct web request runs this
+     * line and stops before any log data is sent (the same guard Joomla puts on its own logs).
+     */
+    public const LOG_GUARD = "#<?php die('Forbidden.'); ?>\n";
+
+    /**
+     * Joomla's configured log folder (Global Configuration > System > Path to Log Folder)
+     *
+     * @return  string
+     */
+    public static function getLogDir(): string
+    {
+        $dir = '';
+
+        try {
+            $dir = (string) Factory::getApplication()->get('log_path', '');
+        } catch (\Throwable $e) {
+            // No application yet; fall back to Joomla's default below
+        }
+
+        if ($dir === '') {
+            $dir = JPATH_ADMINISTRATOR . '/logs';
+        }
+
+        return rtrim($dir, '/\\');
+    }
+
+    /**
+     * Reduce the "Log File Name" setting to a bare name: no folders, no extension, only
+     * letters, digits, "_" and "-". The ".php" extension is added by getLogFile().
+     *
+     * @param   mixed  $name  The setting value
+     *
+     * @return  string
+     */
+    public static function safeLogName($name): string
+    {
+        $name = basename(str_replace('\\', '/', (string) $name));
+        $name = preg_replace('/\.(log|php|txt)$/i', '', $name);
+        $name = preg_replace('/[^A-Za-z0-9_-]/', '', $name);
+
+        return $name !== '' ? $name : 'router_trace';
+    }
+
+    /**
+     * Append a line to the log, starting a new file with the guard line
+     *
+     * @param   string  $line  The line to append, including its newline
+     *
+     * @return  int|false  Bytes written, or false on failure
+     */
+    private function appendToLog(string $line)
+    {
+        $logFile = $this->getLogFile();
+        clearstatcache(true, $logFile);
+
+        if (!is_file($logFile) || filesize($logFile) === 0) {
+            $line = self::LOG_GUARD . $line;
+        }
+
+        return file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * Read the log as an array of non-empty lines, without the guard line(s)
+     *
+     * @return  string[]
+     */
+    private function readLogLines(): array
+    {
+        $logFile = $this->getLogFile();
+
+        if (!is_file($logFile)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            explode("\n", (string) file_get_contents($logFile)),
+            static fn ($line) => $line !== '' && $line[0] !== '#'
+        ));
     }
 
     /**
@@ -288,7 +370,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
             mkdir($logDir, 0755, true);
         }
 
-        file_put_contents($logFile, $logLine, FILE_APPEND | LOCK_EX);
+        $this->appendToLog($logLine);
     }
 
     /**
@@ -582,11 +664,13 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
         $logFile = $this->getLogFile();
 
         if (file_exists($logFile)) {
-            $rotatedFile = $logFile . '.' . date('Y-m-d-His');
+            // Keep the .php extension on rotated files so they stay guarded
+            $base = substr($logFile, 0, -4);
+            $rotatedFile = $base . '.' . date('Y-m-d-His') . '.php';
             rename($logFile, $rotatedFile);
 
             // Keep only last 5 rotated files
-            $pattern = $logFile . '.*';
+            $pattern = $base . '.*.php';
             $files = glob($pattern);
             if ($files && count($files) > 5) {
                 usort($files, function ($a, $b) {
@@ -1381,6 +1465,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
     public function onAjaxRoutertracer(Event $event): void
     {
         $app = $this->getApp();
+        $this->loadLanguage();
 
         // Only allow in administrator
         if (!$app || !$app->isClient('administrator')) {
@@ -1535,7 +1620,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
             ];
 
             $testLine = json_encode($testEntry, JSON_UNESCAPED_SLASHES) . "\n";
-            $result = @file_put_contents($logFile, $testLine, FILE_APPEND | LOCK_EX);
+            $result = @$this->appendToLog($testLine);
 
             $diagnostics['write_test'] = ($result !== false);
             $diagnostics['bytes_written'] = $result;
@@ -1582,8 +1667,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
             ]);
         }
 
-        $content = file_get_contents($logFile);
-        $allLines = array_filter(explode("\n", $content));
+        $allLines = $this->readLogLines();
         $entries = [];
 
         foreach ($allLines as $line) {
@@ -1672,11 +1756,13 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        // Set headers for download and output file directly
+        // Send the entries as a plain .log, without the guard line
+        $content = implode("\n", $this->readLogLines()) . "\n";
+
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="router_trace_' . date('Y-m-d_His') . '.log"');
-        header('Content-Length: ' . filesize($logFile));
-        readfile($logFile);
+        header('Content-Length: ' . strlen($content));
+        echo $content;
         $app->close();
     }
 
@@ -1709,8 +1795,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
         $stats['file_size'] = filesize($logFile);
         $stats['file_size_human'] = $this->formatBytes($stats['file_size']);
 
-        $content = file_get_contents($logFile);
-        $lines = array_filter(explode("\n", $content));
+        $lines = $this->readLogLines();
         $stats['entry_count'] = count($lines);
 
         $requestIds = [];
@@ -1757,7 +1842,6 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
      */
     private function ajaxRenderViewer(): string
     {
-        $this->loadLanguage();
         $token = Session::getFormToken();
         $ajaxUrl = Uri::base() . 'index.php?option=com_ajax&plugin=routertracer&group=system&format=raw&' . $token . '=1';
         $lang = Factory::getLanguage()->getTag();

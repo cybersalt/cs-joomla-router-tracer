@@ -991,9 +991,9 @@ $jsLang = json_encode([
                 html += '<div class="' + classes + '" onclick="toggleEntry(this)">';
                 html += '<div class="log-header">';
                 html += '<div class="log-meta">';
-                html += '<span class="log-timestamp">' + entry.timestamp + '</span>';
-                html += '<span class="log-request-id">' + entry.request_id + '</span>';
-                html += '<span class="' + eventClass + '">' + entry.event + '</span>';
+                html += '<span class="log-timestamp">' + escapeHtml(entry.timestamp) + '</span>';
+                html += '<span class="log-request-id">' + escapeHtml(entry.request_id) + '</span>';
+                html += '<span class="' + eventClass + '">' + escapeHtml(entry.event) + '</span>';
                 if (hasLoop) html += '<span class="loop-badge">' + escapeHtml(RT_LANG.loopDetected) + '</span>';
                 if (hasApacheRewrite) html += '<span class="loop-badge" style="background: #ef4444;">' + escapeHtml(RT_LANG.htaccessRewrite) + '</span>';
                 if (hasWarning && !hasLoop) html += '<span class="warning-badge">' + escapeHtml(RT_LANG.warning) + '</span>';
@@ -1049,7 +1049,7 @@ $jsLang = json_encode([
                         html += '<div class="rewrite-detail"><strong>REDIRECT_URL:</strong> ' + escapeHtml(rewrite.redirect_url) + '</div>';
                     }
                     if (rewrite.redirect_status) {
-                        html += '<div class="rewrite-detail"><strong>REDIRECT_STATUS:</strong> ' + rewrite.redirect_status + '</div>';
+                        html += '<div class="rewrite-detail"><strong>REDIRECT_STATUS:</strong> ' + escapeHtml(rewrite.redirect_status) + '</div>';
                     }
                     if (rewrite.the_request) {
                         html += '<div class="rewrite-detail"><strong>THE_REQUEST:</strong> ' + escapeHtml(rewrite.the_request) + '</div>';
@@ -1066,7 +1066,7 @@ $jsLang = json_encode([
                     if (rewrite.other_redirect_vars && Object.keys(rewrite.other_redirect_vars).length > 0) {
                         html += '<div class="rewrite-detail"><strong>' + escapeHtml(RT_LANG.otherRedirectVars) + '</strong></div>';
                         Object.keys(rewrite.other_redirect_vars).forEach(key => {
-                            html += '<div class="rewrite-detail" style="margin-left: 15px;"><code>' + key + '</code>: ' + escapeHtml(String(rewrite.other_redirect_vars[key]).substring(0, 100)) + '</div>';
+                            html += '<div class="rewrite-detail" style="margin-left: 15px;"><code>' + escapeHtml(key) + '</code>: ' + escapeHtml(String(rewrite.other_redirect_vars[key]).substring(0, 100)) + '</div>';
                         });
                     }
 
@@ -1087,8 +1087,8 @@ $jsLang = json_encode([
                             name => plugin.name.toLowerCase().includes(name)
                         );
                         const badgeClass = isRedirectRelated ? 'plugin-badge plugin-redirect' : 'plugin-badge';
-                        html += '<span class="' + badgeClass + '" title="Order: ' + plugin.ordering + '">';
-                        html += plugin.name;
+                        html += '<span class="' + badgeClass + '" title="Order: ' + escapeHtml(plugin.ordering) + '">';
+                        html += escapeHtml(plugin.name);
                         if (isRedirectRelated) html += ' ⚠️';
                         html += '</span>';
                     });
@@ -1112,9 +1112,9 @@ $jsLang = json_encode([
                         Object.keys(cfg.redirect_plugins).forEach(name => {
                             const p = cfg.redirect_plugins[name];
                             html += '<div class="redirect-plugin-item">';
-                            html += '<strong>' + name + ':</strong> ' + (p.enabled ? '<span style="color: var(--warning)">' + escapeHtml(RT_LANG.enabled) + '</span>' : escapeHtml(RT_LANG.disabled));
+                            html += '<strong>' + escapeHtml(name) + ':</strong> ' + (p.enabled ? '<span style="color: var(--warning)">' + escapeHtml(RT_LANG.enabled) + '</span>' : escapeHtml(RT_LANG.disabled));
                             if (p.params && Object.keys(p.params).length > 0) {
-                                html += ' <code>' + JSON.stringify(p.params).substring(0, 100) + '</code>';
+                                html += ' <code>' + escapeHtml(JSON.stringify(p.params).substring(0, 100)) + '</code>';
                             }
                             html += '</div>';
                         });
@@ -1137,8 +1137,8 @@ $jsLang = json_encode([
                             name = 'core:' + (caller.area || 'joomla');
                         }
                         html += '<div class="caller-chain-item">';
-                        html += '<span class="caller-badge caller-' + caller.type + '">' + name + '</span>';
-                        if (caller.method) html += ' <span class="caller-method">::' + caller.method + '()</span>';
+                        html += '<span class="caller-badge caller-' + escapeHtml(caller.type) + '">' + escapeHtml(name) + '</span>';
+                        if (caller.method) html += ' <span class="caller-method">::' + escapeHtml(caller.method) + '()</span>';
                         if (caller.class) html += ' <span class="caller-class">' + escapeHtml(caller.class) + '</span>';
                         if (i < entry.caller.chain.length - 1) html += ' <span class="caller-arrow">→</span>';
                         html += '</div>';

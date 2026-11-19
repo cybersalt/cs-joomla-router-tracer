@@ -40,9 +40,68 @@ return new class () implements InstallerScriptInterface {
     {
         if ($type === 'install' || $type === 'update') {
             $this->showPostInstallMessage($type);
+            $this->removeOldPublicLogs();
         }
 
         return true;
+    }
+
+    /**
+     * Up to 1.3.0 the log was written to <site root>/logs/, which the web server can serve.
+     * Logs now go to Joomla's log folder as guarded .php files, so remove the old ones.
+     * Only files that are empty or start like a Router Tracer entry are touched.
+     */
+    private function removeOldPublicLogs(): void
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+
+        $query = $db->getQuery(true)
+            ->select($db->quoteName('params'))
+            ->from($db->quoteName('#__extensions'))
+            ->where($db->quoteName('element') . ' = ' . $db->quote('routertracer'))
+            ->where($db->quoteName('folder') . ' = ' . $db->quote('system'))
+            ->where($db->quoteName('type') . ' = ' . $db->quote('plugin'));
+
+        $params = json_decode((string) $db->setQuery($query)->loadResult(), true) ?: [];
+        $name   = basename(str_replace('\\', '/', (string) ($params['log_file'] ?? '')));
+        $name   = $name !== '' ? $name : 'router_trace.log';
+        $dir    = JPATH_ROOT . '/logs';
+
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $removed = 0;
+        $failed  = [];
+
+        foreach (scandir($dir) ?: [] as $file) {
+            if ($file !== $name && strpos($file, $name . '.') !== 0) {
+                continue;
+            }
+
+            $path = $dir . '/' . $file;
+            $head = is_file($path) ? (string) @file_get_contents($path, false, null, 0, 14) : null;
+
+            if ($head === null || ($head !== '' && $head !== '{"timestamp":"')) {
+                continue;
+            }
+
+            if (@unlink($path)) {
+                $removed++;
+            } else {
+                $failed[] = $path;
+            }
+        }
+
+        $app = Factory::getApplication();
+
+        if ($removed) {
+            $app->enqueueMessage(Text::sprintf('PLG_SYSTEM_ROUTERTRACER_POSTINSTALL_OLD_LOGS_REMOVED', $removed, $dir), 'message');
+        }
+
+        if ($failed) {
+            $app->enqueueMessage(Text::sprintf('PLG_SYSTEM_ROUTERTRACER_POSTINSTALL_OLD_LOGS_FAILED', implode(', ', $failed)), 'warning');
+        }
     }
 
     private function showPostInstallMessage(string $type): void

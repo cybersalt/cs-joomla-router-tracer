@@ -2,6 +2,17 @@
 
 All notable changes to the Router Tracer plugin will be documented in this file.
 
+## 🚀 Unreleased
+
+### 🔐 Security
+- **Log no longer downloadable**: the log was written to the site's `/logs` folder, where visitors could download it (it holds visited URLs, referrers and stack traces). It now goes to Joomla's log folder (Global Configuration > System) as a `.php` file that stops as soon as it is opened from a browser, the same way Joomla protects its own logs. Rotated logs keep the protection.
+- **Old logs removed on update**: updating removes the old `router_trace.log` files (and their rotated and cleared copies) from the site's `/logs` folder, and says how many it removed.
+- **Safe log file name**: the "Log File Name" setting is reduced to a plain name (letters, numbers, `-` and `_`), so it can't point outside the log folder or change the file type.
+- **Log viewer escaping**: every value from the log is now escaped before it is shown in the viewer.
+
+### 🐛 Bug Fixes
+- **Untranslated messages**: Clear Log, View and the access/token errors returned raw language keys (e.g. `PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED`); the plugin's language file is now loaded for every log viewer request.
+
 ## 🚀 Version 1.3.0 (March 2026)
 
 ### 📦 New Features
