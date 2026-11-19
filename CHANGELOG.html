@@ -3,6 +3,28 @@
     <p>All notable changes to the Router Tracer plugin will be documented in this file.</p>
 
     <div class="version">
+        <h2>🚀 Version 1.3.0 <span class="version-badge">March 2026</span></h2>
+
+        <h3>📦 New Features</h3>
+        <ul>
+            <li><strong>Post-Install Settings Link</strong>: Installation now shows a Bootstrap card with a direct link to the plugin settings page</li>
+            <li><strong>Errors Only Mode</strong>: New "Log Errors Only" setting to capture only 404s, 500s, and fatal errors without logging normal request lifecycle events</li>
+            <li><strong>Reset Filters Button</strong>: Log viewer now includes a "Reset Filters" button to quickly clear all active filters</li>
+        </ul>
+
+        <h3>🐛 Bug Fixes</h3>
+        <ul>
+            <li><strong>Clear Log Not Working</strong>: Fixed issue where clearing the log appeared to do nothing because the plugin's own lifecycle events were re-populating the file after the clear action</li>
+        </ul>
+
+        <h3>🔧 Improvements</h3>
+        <ul>
+            <li><strong>Changelog URL</strong>: Added <code>changelogurl</code> to manifest for Joomla's built-in changelog display</li>
+            <li><strong>Standards Compliance</strong>: Post-install message now uses Bootstrap card pattern with proper <code>.sys.ini</code> language constants</li>
+        </ul>
+    </div>
+
+    <div class="version">
         <h2>🚀 Version 1.2.1 <span class="version-badge">February 2026</span></h2>
 
         <h3>🐛 Bug Fixes</h3>

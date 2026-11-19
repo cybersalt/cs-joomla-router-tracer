@@ -73,6 +73,11 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
     private bool $inShutdown = false;
 
     /**
+     * @var bool Suppress all logging for the remainder of this request
+     */
+    private bool $suppressLogging = false;
+
+    /**
      * Constructor
      *
      * @param   DispatcherInterface  $dispatcher  The event dispatcher
@@ -155,6 +160,12 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
             return false;
         }
 
+        // Never log our own AJAX requests
+        $input = $app->getInput();
+        if ($input->get('option') === 'com_ajax' && $input->get('plugin') === 'routertracer') {
+            return false;
+        }
+
         $isSite = $app->isClient('site');
         $isAdmin = $app->isClient('administrator');
 
@@ -232,7 +243,16 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
      */
     private function log(string $event, array $data = [], bool $force = false): void
     {
+        if ($this->suppressLogging) {
+            return;
+        }
+
         if (!$force && !$this->shouldLog()) {
+            return;
+        }
+
+        // In errors-only mode, skip non-forced (non-error) events
+        if (!$force && $this->getParam('errors_only', 0)) {
             return;
         }
 
@@ -1605,20 +1625,33 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
      */
     private function ajaxClearLog(): string
     {
+        $this->suppressLogging = true;
         $logFile = $this->getLogFile();
+        $existed = file_exists($logFile);
+        $size = $existed ? filesize($logFile) : 0;
 
-        if (file_exists($logFile)) {
-            // Archive before clearing
-            $archiveFile = $logFile . '.cleared.' . date('Y-m-d-His');
-            copy($logFile, $archiveFile);
+        if ($existed) {
+            $result = @unlink($logFile);
 
-            // Clear the file
-            file_put_contents($logFile, '');
+            if (!$result) {
+                // Fallback: try truncating if delete fails
+                $result = @file_put_contents($logFile, '');
+
+                if ($result === false) {
+                    return json_encode([
+                        'success' => false,
+                        'error'   => 'Failed to clear log file: ' . $logFile,
+                    ]);
+                }
+            }
         }
 
         return json_encode([
-            'success' => true,
-            'message' => Text::_('PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED'),
+            'success'     => true,
+            'message'     => Text::_('PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED'),
+            'file'        => $logFile,
+            'existed'     => $existed,
+            'previous_size' => $size,
         ]);
     }
 
@@ -1728,6 +1761,7 @@ class RouterTracer extends CMSPlugin implements SubscriberInterface
         $token = Session::getFormToken();
         $ajaxUrl = Uri::base() . 'index.php?option=com_ajax&plugin=routertracer&group=system&format=raw&' . $token . '=1';
         $lang = Factory::getLanguage()->getTag();
+        $logFilePath = $this->getLogFile();
 
         ob_start();
         include __DIR__ . '/../../tmpl/viewer.php';

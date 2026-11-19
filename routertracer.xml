@@ -7,9 +7,12 @@
     <license>GNU General Public License version 2 or later</license>
     <authorEmail>support@cybersalt.com</authorEmail>
     <authorUrl>https://cybersalt.com</authorUrl>
-    <version>1.2.1</version>
+    <version>1.3.0</version>
     <description>PLG_SYSTEM_ROUTERTRACER_DESC</description>
+    <changelogurl>https://raw.githubusercontent.com/cybersalt/cs-joomla-router-tracer/main/CHANGELOG.html</changelogurl>
     <namespace path="src">Cybersalt\Plugin\System\RouterTracer</namespace>
+
+    <scriptfile>script.php</scriptfile>
 
     <files>
         <folder plugin="routertracer">services</folder>
@@ -101,6 +104,17 @@
                     type="radio"
                     label="PLG_SYSTEM_ROUTERTRACER_FILTER_BACKEND_LABEL"
                     description="PLG_SYSTEM_ROUTERTRACER_FILTER_BACKEND_DESC"
+                    default="0"
+                    class="btn-group btn-group-yesno"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field
+                    name="errors_only"
+                    type="radio"
+                    label="PLG_SYSTEM_ROUTERTRACER_ERRORS_ONLY_LABEL"
+                    description="PLG_SYSTEM_ROUTERTRACER_ERRORS_ONLY_DESC"
                     default="0"
                     class="btn-group btn-group-yesno"
                 >

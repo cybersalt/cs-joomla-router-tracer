@@ -28,10 +28,30 @@ use Joomla\CMS\Language\Text;
 
 /**
  * Variables available:
- * @var string $token     CSRF token
- * @var string $ajaxUrl   Base AJAX URL
- * @var string $lang      Language tag (e.g. en-GB)
+ * @var string $token        CSRF token
+ * @var string $ajaxUrl      Base AJAX URL
+ * @var string $lang         Language tag (e.g. en-GB)
+ * @var string $logFilePath  Full path to the log file
  */
+
+// Handle clear action directly in the viewer
+$clearResult = null;
+$input = \Joomla\CMS\Factory::getApplication()->getInput();
+if ($input->get('do_clear') === '1') {
+    if (file_exists($logFilePath)) {
+        $deleted = @unlink($logFilePath);
+        if (!$deleted) {
+            $truncated = @file_put_contents($logFilePath, '');
+            $clearResult = ($truncated !== false)
+                ? ['success' => true, 'method' => 'truncated']
+                : ['success' => false, 'error' => 'Could not delete or truncate: ' . $logFilePath];
+        } else {
+            $clearResult = ['success' => true, 'method' => 'deleted'];
+        }
+    } else {
+        $clearResult = ['success' => true, 'method' => 'not_found'];
+    }
+}
 
 // Build JS language object for use in JavaScript
 $jsLang = json_encode([
@@ -161,6 +181,8 @@ $jsLang = json_encode([
         .btn-success:hover { background: #218838; }
         .btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
         .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+        .btn-outline:hover { color: var(--text); border-color: var(--text-muted); }
 
         .btn-group {
             display: flex;
@@ -734,6 +756,38 @@ $jsLang = json_encode([
             </div>
         </div>
 
+        <?php
+        // Diagnostic: check what's installed vs what's running
+        $installedFile = JPATH_PLUGINS . '/system/routertracer/src/Extension/RouterTracer.php';
+        $fileHash = file_exists($installedFile) ? substr(md5_file($installedFile), 0, 8) : 'NOT FOUND';
+        $fileMtime = file_exists($installedFile) ? date('Y-m-d H:i:s', filemtime($installedFile)) : 'N/A';
+        $logExists = file_exists($logFilePath);
+        $logSize = $logExists ? filesize($logFilePath) : 0;
+        $logWritable = $logExists ? is_writable($logFilePath) : is_writable(dirname($logFilePath));
+        ?>
+        <div style="padding: 8px 16px; margin-bottom: 10px; border-radius: 6px; background: var(--bg-card); font-size: 12px; color: var(--text-muted);">
+            <strong>Debug:</strong>
+            PHP file hash: <?php echo $fileHash; ?> |
+            Modified: <?php echo $fileMtime; ?> |
+            Log: <?php echo htmlspecialchars($logFilePath); ?> |
+            Exists: <?php echo $logExists ? 'yes' : 'no'; ?> |
+            Size: <?php echo $logSize; ?> bytes |
+            Writable: <?php echo $logWritable ? 'yes' : 'no'; ?>
+            <?php if (function_exists('opcache_get_status')): ?>
+            | OPcache: <?php echo opcache_get_status(false)['opcache_enabled'] ? 'ON' : 'OFF'; ?>
+            <?php endif; ?>
+        </div>
+
+        <?php if ($clearResult): ?>
+        <div style="padding: 12px 20px; margin-bottom: 10px; border-radius: 6px; background: <?php echo $clearResult['success'] ? '#1b5e20' : '#b71c1c'; ?>; color: #fff;">
+            <?php if ($clearResult['success']): ?>
+                <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED'); ?> (<?php echo $clearResult['method']; ?>)
+            <?php else: ?>
+                <?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_ERROR_LABEL'); ?>: <?php echo htmlspecialchars($clearResult['error']); ?>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <div class="stats-bar" id="statsBar">
             <div class="stat">
                 <span class="stat-value" id="statEntries">-</span>
@@ -798,6 +852,7 @@ $jsLang = json_encode([
                 </label>
             </div>
             <button class="btn btn-secondary" onclick="applyFilters()"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_APPLY_FILTERS'); ?></button>
+            <button class="btn btn-outline" onclick="resetFilters()"><?php echo Text::_('PLG_SYSTEM_ROUTERTRACER_BTN_RESET_FILTERS'); ?></button>
         </div>
 
         <div class="log-container" id="logContainer">
@@ -824,9 +879,23 @@ $jsLang = json_encode([
         let totalEntries = 0;
 
         // Initialize
+        const justCleared = <?php echo $clearResult && $clearResult['success'] ? 'true' : 'false'; ?>;
+
         document.addEventListener('DOMContentLoaded', function() {
-            loadStats();
-            loadLog();
+            if (justCleared) {
+                // After a successful clear, show empty state directly
+                document.getElementById('logContainer').innerHTML =
+                    '<div class="empty-state"><h3>' + escapeHtml(RT_LANG.noLogEntries) + '</h3><p>' + escapeHtml(RT_LANG.noEntriesMatch) + '</p></div>';
+                document.getElementById('statEntries').textContent = '0';
+                document.getElementById('statRequests').textContent = '0';
+                document.getElementById('statSize').textContent = '0 B';
+                document.getElementById('statWarnings').textContent = '0';
+                document.getElementById('statLoops').textContent = '0';
+                document.getElementById('statErrors').textContent = '0';
+            } else {
+                loadStats();
+                loadLog();
+            }
 
             // Enter key on filter inputs
             document.getElementById('filterRequestId').addEventListener('keypress', function(e) {
@@ -1170,6 +1239,15 @@ $jsLang = json_encode([
             loadLog();
         }
 
+        function resetFilters() {
+            document.getElementById('filterRequestId').value = '';
+            document.getElementById('filterEvent').value = '';
+            document.getElementById('filterLimit').value = '100';
+            document.getElementById('filterWarningsOnly').checked = false;
+            currentOffset = 0;
+            loadLog();
+        }
+
         function prevPage() {
             const limit = parseInt(document.getElementById('filterLimit').value);
             currentOffset = Math.max(0, currentOffset - limit);
@@ -1191,20 +1269,9 @@ $jsLang = json_encode([
         }
 
         function clearLog() {
-            fetch(ajaxUrl + '&action=clear')
-                .then(r => r.json())
-                .then(data => {
-                    hideClearModal();
-                    if (data.success) {
-                        refreshLog();
-                    } else {
-                        alert(RT_LANG.errorLabel + ': ' + (data.error || RT_LANG.errorUnknown));
-                    }
-                })
-                .catch(err => {
-                    hideClearModal();
-                    alert(RT_LANG.clearFailed + err.message);
-                });
+            // Reload the viewer page with do_clear=1 — this handles the clear
+            // directly in the template PHP, bypassing the AJAX handler entirely
+            window.location.href = ajaxUrl + '&action=viewer&do_clear=1';
         }
 
         function downloadLog() {
