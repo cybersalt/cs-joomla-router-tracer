@@ -3,6 +3,28 @@
     <p>All notable changes to the Router Tracer plugin will be documented in this file.</p>
 
     <div class="version">
+        <h2>🚀 Version 1.3.1 <span class="version-badge">November 19, 2026</span></h2>
+
+        <h3>🔐 Security</h3>
+        <ul>
+            <li><strong>Log no longer downloadable</strong>: the log was written to the site's <code>/logs</code> folder, where visitors could download it (it holds visited URLs, referrers and stack traces). It now goes to Joomla's log folder (Global Configuration &gt; System) as a <code>.php</code> file that stops as soon as it is opened from a browser, the same way Joomla protects its own logs. Rotated logs keep the protection.</li>
+            <li><strong>Old logs removed on update</strong>: updating removes the old <code>router_trace.log</code> files (and their rotated and cleared copies) from the site's <code>/logs</code> folder, and says how many it removed.</li>
+            <li><strong>Safe log file name</strong>: the "Log File Name" setting is reduced to a plain name (letters, numbers, <code>-</code> and <code>_</code>), so it can't point outside the log folder or change the file type.</li>
+            <li><strong>Log viewer escaping</strong>: every value from the log is now escaped before it is shown in the viewer.</li>
+        </ul>
+
+        <h3>🐛 Bug Fixes</h3>
+        <ul>
+            <li><strong>Untranslated messages</strong>: Clear Log, View and the access/token errors returned raw language keys (e.g. <code>PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED</code>); the plugin's language file is now loaded for every log viewer request.</li>
+        </ul>
+
+        <h3>📦 New Features</h3>
+        <ul>
+            <li><strong>File check</strong>: the plugin settings now show whether every installed file matches the released version, and warn when an install or update did not finish (for example a file left at 0 bytes)</li>
+        </ul>
+    </div>
+
+    <div class="version">
         <h2>🚀 Version 1.3.0 <span class="version-badge">March 2026</span></h2>
 
         <h3>📦 New Features</h3>

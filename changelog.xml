@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<changelogs>
+  <changelog>
+    <element>routertracer</element>
+    <type>plugin</type>
+    <version>1.3.1</version>
+    <security>
+      <item><![CDATA[<strong>Log no longer downloadable</strong>: the log was written to the site's <code>/logs</code> folder, where visitors could download it (it holds visited URLs, referrers and stack traces). It now goes to Joomla's log folder (Global Configuration &gt; System) as a <code>.php</code> file that stops as soon as it is opened from a browser, the same way Joomla protects its own logs. Rotated logs keep the protection.]]></item>
+      <item><![CDATA[<strong>Old logs removed on update</strong>: updating removes the old <code>router_trace.log</code> files (and their rotated and cleared copies) from the site's <code>/logs</code> folder, and says how many it removed.]]></item>
+      <item><![CDATA[<strong>Safe log file name</strong>: the "Log File Name" setting is reduced to a plain name (letters, numbers, <code>-</code> and <code>_</code>), so it can't point outside the log folder or change the file type.]]></item>
+      <item><![CDATA[<strong>Log viewer escaping</strong>: every value from the log is now escaped before it is shown in the viewer.]]></item>
+    </security>
+    <fix>
+      <item><![CDATA[<strong>Untranslated messages</strong>: Clear Log, View and the access/token errors returned raw language keys (e.g. <code>PLG_SYSTEM_ROUTERTRACER_LOG_CLEARED</code>); the plugin's language file is now loaded for every log viewer request.]]></item>
+    </fix>
+    <addition>
+      <item><![CDATA[<strong>File check</strong>: the plugin settings now show whether every installed file matches the released version, and warn when an install or update did not finish (for example a file left at 0 bytes)]]></item>
+    </addition>
+  </changelog>
+</changelogs>
